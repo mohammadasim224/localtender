@@ -9,30 +9,58 @@ import { clerkEnabled } from "@/lib/clerk";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const userState = clerkEnabled ? useUser() : { isLoaded: true, user: null as any };
-  const { isLoaded, user } = userState;
   const [trades, setTrades] = useState<string[]>([]);
   const [company, setCompany] = useState("");
   const [plan, setPlan] = useState("alerts");
 
+  if (!clerkEnabled) {
+    return (
+      <>
+        <Header />
+        <main className="hero"><div className="wrap"><p className="notice">Turn on Clerk keys first.</p></div></main>
+        <Footer />
+      </>
+    );
+  }
+
+  return (
+    <OnboardingForm
+      trades={trades}
+      setTrades={setTrades}
+      company={company}
+      setCompany={setCompany}
+      plan={plan}
+      setPlan={setPlan}
+      router={router}
+    />
+  );
+}
+
+function OnboardingForm({
+  trades, setTrades, company, setCompany, plan, setPlan, router,
+}: {
+  trades: string[];
+  setTrades: (v: string[] | ((c: string[]) => string[])) => void;
+  company: string;
+  setCompany: (v: string) => void;
+  plan: string;
+  setPlan: (v: string) => void;
+  router: ReturnType<typeof useRouter>;
+}) {
+  const { isLoaded, user } = useUser();
+
   useEffect(() => {
-    if (!clerkEnabled) {
-      router.replace("/signup");
-      return;
-    }
     if (!isLoaded || !user) return;
     const meta = (user.unsafeMetadata || {}) as Record<string, unknown>;
     if (Array.isArray(meta.trades)) setTrades(meta.trades as string[]);
     if (typeof meta.company === "string") setCompany(meta.company);
     if (typeof meta.plan === "string") setPlan(meta.plan);
-  }, [isLoaded, user, router]);
+  }, [isLoaded, user, setTrades, setCompany, setPlan]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!user) return;
-    await user.update({
-      unsafeMetadata: { company, trades, plan },
-    });
+    await user.update({ unsafeMetadata: { company, trades, plan } });
     router.push("/app");
   }
 
