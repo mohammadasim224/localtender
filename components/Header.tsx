@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AuthNav } from "./AuthNav";
 
 export function Header({ dim = "public" }: { dim?: "public" | "app" }) {
   return (
@@ -9,17 +10,9 @@ export function Header({ dim = "public" }: { dim?: "public" | "app" }) {
           <Link href="/jobs">Jobs</Link>
           <Link href="/how-it-works">How it works</Link>
           <Link href="/pricing">Pricing</Link>
-          {dim === "app" ? (
-            <>
-              <Link href="/app">My jobs</Link>
-              <Link href="/admin">Admin</Link>
-            </>
-          ) : (
-            <>
-              <Link href="/login">Log in</Link>
-              <Link className="btn" href="/signup">Join</Link>
-            </>
-          )}
+          {dim === "app" && <Link href="/app">My jobs</Link>}
+          {dim === "app" && <Link href="/admin">Admin</Link>}
+          <AuthNav />
         </nav>
       </div>
     </header>
