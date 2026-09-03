@@ -1,28 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { clerkEnabled } from "@/lib/clerk";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { clearSession, readSession } from "@/lib/session";
 
 export function AuthNav() {
-  if (!clerkEnabled) {
+  const router = useRouter();
+  const [inApp, setInApp] = useState(false);
+
+  useEffect(() => {
+    setInApp(Boolean(readSession()));
+  }, []);
+
+  if (inApp) {
     return (
       <>
-        <Link href="/login">Log in</Link>
-        <Link className="btn" href="/signup">Join</Link>
+        <Link href="/app">My jobs</Link>
+        <button
+          className="btn ghost"
+          type="button"
+          onClick={() => {
+            clearSession();
+            setInApp(false);
+            router.push("/");
+          }}
+        >
+          Log out
+        </button>
       </>
     );
   }
+
   return (
     <>
-      <SignedOut>
-        <Link href="/login">Log in</Link>
-        <Link className="btn" href="/signup">Join</Link>
-      </SignedOut>
-      <SignedIn>
-        <Link href="/app">My jobs</Link>
-        <UserButton afterSignOutUrl="/" />
-      </SignedIn>
+      <Link href="/login">Log in</Link>
+      <Link className="btn" href="/signup">Join</Link>
     </>
   );
 }
